@@ -18,8 +18,15 @@ typedef struct
 {
 	Node node[81];
 	int num_solved;
+	int unsolved;
 }SudokoBoard;
 
+typedef struct
+{
+	int array[20];
+}Dependency;
 
+int get_dependency_list(int num, Dependency *d);
+int validate_sudoko(SudokoBoard *sudo);
 void print_sudoko(SudokoBoard *su);
 #endif
