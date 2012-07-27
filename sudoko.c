@@ -3,17 +3,15 @@
 #include <string.h>
 #include "sudo.h"
 
+int num_guess = 0;
 int update_hints(SudokoBoard *sudo, int num)
 {
 	int i;
 	Dependency d;
 
-	if(sudo->node[num].value == 0)
+	if((sudo->node[num].value == 0) & (sudo->node[num].num_hints != 0))
 	{
-		if(20 != get_dependency_list(num, &d)) abort();
-
-		if(sudo->node[num].num_hints <= 0)
-			return 0;
+		get_dependency_list(num, &d);
 		for(i = 0; i < 20; i++)
 		{
 			if(sudo->node[num].num_hints == 1)
@@ -53,12 +51,13 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 		flag = 0;
 		for(i = 0; i < 81; i++)
 		{
+			if(sudo.node[i].value == 0)
 			flag += update_hints(&sudo, i);
 		}
-		if(0 != flag)
-		{
+#if 0		
+		if(flag != 0)
 			print_sudoko(&sudo);
-		}
+#endif			
 	}
 	while(0 != flag);
 
@@ -80,7 +79,7 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 					sudo.unsolved = 1;
 					return sudo;
 				}
-				for(j = 1;j <= 9; j++)
+				for(j = 9;j >= 1; j--)
 				{
 					if(sudo.node[i].hints[j])
 					{
@@ -88,7 +87,7 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 						sudo.node[i].value = sudo.node[i].hints[j];
 						sudo.node[i].hints[j] = 0;
 						sudo.node[i].num_hints--;
-
+						num_guess++;
 						tmp_board = solve_sudoko(sudo);
 						if(tmp_board.unsolved == 0)
 						{
@@ -155,7 +154,7 @@ int main(int argc, char *argv[])
 		{
 			int k;
 			for(k = 0; k <= 9; k++)
-			sudo.node[i].hints[k] = k;
+				sudo.node[i].hints[k] = k;
 			sudo.node[i].num_hints = 9;
 		}
 	}	
@@ -172,8 +171,8 @@ int main(int argc, char *argv[])
 		{
 			printf("this sudoko is unsolvable");
 		}
-
 	}
+	printf("\n num_guess : %d", num_guess);
 	print_sudoko(&sudo);
 	return 0;
 }
