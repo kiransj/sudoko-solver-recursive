@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "sudo.h"
 
 int update_hints(SudokoBoard *sudo, int num)
@@ -11,16 +12,18 @@ int update_hints(SudokoBoard *sudo, int num)
 	{
 		if(20 != get_dependency_list(num, &d)) abort();
 
+		if(sudo->node[num].num_hints <= 0)
+			return 0;
 		for(i = 0; i < 20; i++)
 		{
+			if(sudo->node[num].num_hints == 1)
+				break;
 			if(sudo->node[d.array[i]].value != 0)
 			{
 				if(sudo->node[num].hints[sudo->node[d.array[i]].value] != 0)
 				{
 					sudo->node[num].hints[sudo->node[d.array[i]].value] = 0;
 					sudo->node[num].num_hints--;
-
-					if(sudo->node[num].num_hints <= 0) abort();
 				}
 			}
 		}
@@ -34,17 +37,17 @@ int update_hints(SudokoBoard *sudo, int num)
 					sudo->node[num].value = sudo->node[num].hints[i];
 					sudo->node[num].hints[i] = 0;
 					sudo->node[num].num_hints--;
+					sudo->num_solved++;
 					return 1;
 				}
 			}
-			abort();
 		}
 	}
 	return 0;
 }
 SudokoBoard solve_sudoko(SudokoBoard sudo)
 {
-	int i, flag;
+	int i, flag, ret;
 	do
 	{
 		flag = 0;
@@ -58,8 +61,48 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 		}
 	}
 	while(0 != flag);
-	if(validate_sudoko(&sudo) != 0)
+
+	ret = validate_sudoko(&sudo);
+	if(ret < 0)
 	{
+		sudo.unsolved = 1;
+		return sudo;
+	}
+	else if(ret > 0)
+	{
+		for(i = 0; i < 81; i++)
+		{
+			if(sudo.node[i].value == 0)
+			{
+				int j;
+				if(sudo.node[i].num_hints == 0)
+				{
+					sudo.unsolved = 1;
+					return sudo;
+				}
+				for(j = 1;j <= 9; j++)
+				{
+					if(sudo.node[i].hints[j])
+					{
+						SudokoBoard tmp_board;
+						sudo.node[i].value = sudo.node[i].hints[j];
+						sudo.node[i].hints[j] = 0;
+						sudo.node[i].num_hints--;
+
+						tmp_board = solve_sudoko(sudo);
+						if(tmp_board.unsolved == 0)
+						{
+							memcpy(&sudo, &tmp_board, sizeof(SudokoBoard));
+							return sudo;
+						}
+						else
+						{
+							sudo.node[i].value = 0; 
+						}
+					}
+				}
+			}
+		}
 		sudo.unsolved = 1;
 		return sudo;
 	}
@@ -118,17 +161,18 @@ int main(int argc, char *argv[])
 	}	
 	fclose(fp);
 	print_sudoko(&sudo);
-	if(validate_sudoko(&sudo) != 0)
+	if(validate_sudoko(&sudo) < 0)
 	{
 		printf("\n invalid game\n");
 	}
 	else
 	{
 		sudo = solve_sudoko(sudo);
-	}
-	if(sudo.unsolved)
-	{
-		printf("this sudoko is unsolvable");
+		if(sudo.unsolved)
+		{
+			printf("this sudoko is unsolvable");
+		}
+
 	}
 	print_sudoko(&sudo);
 	return 0;

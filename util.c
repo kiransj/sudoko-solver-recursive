@@ -111,6 +111,7 @@ int get_dependency_list(int num, Dependency *d)
 
 int validate_sudoko(SudokoBoard *sudo)
 {
+	int ret = 0;
 	int i, j;
 	Dependency d;
 
@@ -124,12 +125,16 @@ int validate_sudoko(SudokoBoard *sudo)
 			{
 				if(sudo->node[d.array[i]].value == sudo->node[j].value)
 				{
-					return 1;
+					return -1;
 				}
 			}
 		}
+		else
+		{
+			ret = 1; 
+		}
 	}
-	return 0;
+	return ret;
 }
 
 void print_sudoko(SudokoBoard *su)
