@@ -201,14 +201,15 @@ int update_hints(SudokoBoard *sudo, int num)
 		get_dependency_list(num, &d);
 		for(i = 0; i < 20; i++)
 		{
-			if(sudo->node[num].num_hints == 1)
-				break;
 			if(sudo->node[d.array[i]].value != 0)
 			{
 				if(sudo->node[num].hints[sudo->node[d.array[i]].value] != 0)
 				{
 					sudo->node[num].hints[sudo->node[d.array[i]].value] = 0;
-					sudo->node[num].num_hints--;
+					if(--sudo->node[num].num_hints == 1)
+                    {
+                        break;
+                    }
 				}
 			}
 		}
@@ -239,12 +240,8 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 		for(i = 0; i < 81; i++)
 		{
 			if(sudo.node[i].value == 0)
-			flag += update_hints(&sudo, i);
+			    flag += update_hints(&sudo, i);
 		}
-#if 0		
-		if(flag != 0)
-			print_sudoko(&sudo);
-#endif			
 	}
 	while(0 != flag);
 
@@ -256,6 +253,8 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 	}
 	else if(ret > 0)
 	{
+        
+//		print_sudoko(&sudo);
 		for(i = 0; i < 81; i++)
 		{
 			if(sudo.node[i].value == 0)
@@ -274,15 +273,15 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 						tmp_board.node[i].value = sudo.node[i].hints[j];
 						tmp_board.node[i].hints[j] = 0;
 						tmp_board.node[i].num_hints = 0;
-						num_guess++;
+
 						tmp_board = solve_sudoko(tmp_board);                        
 						if(tmp_board.unsolved == 0)
 						{
+						    num_guess++;
 							return tmp_board;
 						}
 						else
 						{
-						    num_guess--;
 							sudo.node[i].value = 0; 
 						    sudo.node[i].num_hints--;
 						}
