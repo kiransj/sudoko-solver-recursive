@@ -1,4 +1,4 @@
 all:
-	gcc -g sudoko.c util.c
+	gcc -g sudoko.c 
 clean:
 	rm a.out
