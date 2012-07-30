@@ -360,6 +360,15 @@ int main(int argc, char *argv[])
 			printf("this sudoko is unsolvable");
 		}
 	}
+
+	if(validate_sudoko(&sudo) < 0)
+	{
+		printf("\n invalid game\n");
+	}
+    else
+    {
+		printf("\n Game Solved\n");
+    }
 	printf("\n num_guess : %d", num_guess);
 	print_sudoko(&sudo);
 	return 0;
