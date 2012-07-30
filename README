@@ -1,0 +1,9 @@
+to compile type
+make
+
+to use the program run
+
+./a.out <filename>
+
+filename is the name of the file which has the sudoko to be solved.
+See the sample file with the repo

@@ -3,8 +3,8 @@
 #include <string.h>
 
 
-#define LOG_INFO(format, args...)   fprintf(stdout, format "\n", ## args)
-#define LOG_ERROR(format, args...)  fprintf(stderr, format "\n", ## args)
+#define LOG_INFO(format, args...)   fLOG_INFO(stdout, format "\n", ## args)
+#define LOG_ERROR(format, args...)  fLOG_INFO(stderr, format "\n", ## args)
 typedef unsigned char uint8_t;
 
 typedef struct
@@ -146,7 +146,7 @@ int validate_sudoko(SudokoBoard *sudo)
 	{
 		if(sudo->node[j].value)
 		{
-    		get_dependency_list(j, &d);
+			get_dependency_list(j, &d);
 
 			for(i = 0; i < 20; i++)
 			{
@@ -166,29 +166,29 @@ int validate_sudoko(SudokoBoard *sudo)
 
 void print_sudoko(SudokoBoard *su)
 {
-    int i;
-	printf("\n|-----------------------------|\n|");
+	int i;
+	LOG_INFO("\n|-----------------------------|\n|");
 	for(i = 0; i < 81; i++)
 	{
 		if(i && i % 3 == 0)
 		{
 			if(i % 27 == 0)
 			{
-				printf("|\n|-----------------------------");
+				LOG_INFO("|\n|-----------------------------");
 			}
 			if(i % 9 == 0)
 			{
-				printf("|\n");				
+				LOG_INFO("|\n");				
 			}
-			printf("|");
+			LOG_INFO("|");
 		}
 		if(su->node[i].value != 0)
-			printf(" %d ", su->node[i].value);
+			LOG_INFO(" %d ", su->node[i].value);
 		else
-			printf(" * ");
+			LOG_INFO(" * ");
 
 	}
-	printf("|\n|-----------------------------|\n\n");
+	LOG_INFO("|\n|-----------------------------|\n\n");
 }
 
 int update_hints(SudokoBoard *sudo, int num)
@@ -207,9 +207,9 @@ int update_hints(SudokoBoard *sudo, int num)
 				{
 					sudo->node[num].hints[sudo->node[d.array[i]].value] = 0;
 					if(--sudo->node[num].num_hints == 1)
-                    {
-                        break;
-                    }
+					{
+						break;
+					}
 				}
 			}
 		}
@@ -240,7 +240,7 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 		for(i = 0; i < 81; i++)
 		{
 			if(sudo.node[i].value == 0)
-			    flag += update_hints(&sudo, i);
+				flag += update_hints(&sudo, i);
 		}
 	}
 	while(0 != flag);
@@ -252,9 +252,10 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 		return sudo;
 	}
 	else if(ret > 0)
-	{
-        
-//		print_sudoko(&sudo);
+	{		
+		/* uncomment the below line to see the intermediate steps 
+		 * in the solving the game*/
+/*		print_sudoko(&sudo);*/
 		for(i = 0; i < 81; i++)
 		{
 			if(sudo.node[i].value == 0)
@@ -274,16 +275,16 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 						tmp_board.node[i].hints[j] = 0;
 						tmp_board.node[i].num_hints = 0;
 
-						tmp_board = solve_sudoko(tmp_board);                        
+						tmp_board = solve_sudoko(tmp_board);						
 						if(tmp_board.unsolved == 0)
 						{
-						    num_guess++;
+							num_guess++;
 							return tmp_board;
 						}
 						else
 						{
 							sudo.node[i].value = 0; 
-						    sudo.node[i].num_hints--;
+							sudo.node[i].num_hints--;
 						}
 					}
 				}
@@ -349,26 +350,26 @@ int main(int argc, char *argv[])
 	print_sudoko(&sudo);
 	if(validate_sudoko(&sudo) < 0)
 	{
-		printf("\n invalid game\n");
+		LOG_ERROR("\n invalid game\n");
 	}
 	else
 	{
 		sudo = solve_sudoko(sudo);
 		if(sudo.unsolved)
 		{
-			printf("this sudoko is unsolvable");
+			LOG_ERROR("this sudoko is unsolvable");
 		}
-	}
 
-	if(validate_sudoko(&sudo) < 0)
-	{
-		printf("\n invalid game\n");
+		if(validate_sudoko(&sudo) < 0)
+		{
+			LOG_ERROR("\n invalid game\n");
+		}
+		else
+		{
+			LOG_INFO("\n Game Solved\n");
+		}
+		LOG_INFO("\n num_guess : %d", num_guess);
+		print_sudoko(&sudo);
 	}
-    else
-    {
-		printf("\n Game Solved\n");
-    }
-	printf("\n num_guess : %d", num_guess);
-	print_sudoko(&sudo);
 	return 0;
 }
