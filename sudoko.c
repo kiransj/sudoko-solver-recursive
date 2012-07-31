@@ -3,8 +3,8 @@
 #include <string.h>
 
 
-#define LOG_INFO(format, args...)   fLOG_INFO(stdout, format "\n", ## args)
-#define LOG_ERROR(format, args...)  fLOG_INFO(stderr, format "\n", ## args)
+#define LOG_INFO(format, args...)   fprintf(stdout, format "\n", ## args)
+#define LOG_ERROR(format, args...)  fprintf(stderr, format "\n", ## args)
 typedef unsigned char uint8_t;
 
 typedef struct
@@ -167,25 +167,25 @@ int validate_sudoko(SudokoBoard *sudo)
 void print_sudoko(SudokoBoard *su)
 {
 	int i;
-	LOG_INFO("\n|-----------------------------|\n|");
+	printf("\n|-----------------------------|\n|");
 	for(i = 0; i < 81; i++)
 	{
 		if(i && i % 3 == 0)
 		{
 			if(i % 27 == 0)
 			{
-				LOG_INFO("|\n|-----------------------------");
+				printf("|\n|-----------------------------");
 			}
 			if(i % 9 == 0)
 			{
-				LOG_INFO("|\n");				
+				printf("|\n");				
 			}
-			LOG_INFO("|");
+			printf("|");
 		}
 		if(su->node[i].value != 0)
-			LOG_INFO(" %d ", su->node[i].value);
+			printf(" %d ", su->node[i].value);
 		else
-			LOG_INFO(" * ");
+			printf(" * ");
 
 	}
 	LOG_INFO("|\n|-----------------------------|\n\n");
