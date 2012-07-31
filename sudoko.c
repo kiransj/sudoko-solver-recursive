@@ -27,7 +27,7 @@ typedef struct
 
 int num_guess = 0;
 
-int dependency_block[81][4] = 
+int dependency_block[81][4] =
 {
 	{ 10,  11,  19,  20}, /* 00 */
 	{  9,  11,  18,  20}, /* 01 */
@@ -116,10 +116,11 @@ int dependency_block[81][4] =
 int get_dependency_list(int num, Dependency *d)
 {
 	int count = 0, tmp, i;
-	d->array[count++] = dependency_block[num][0]; 
-	d->array[count++] = dependency_block[num][1]; 
-	d->array[count++] = dependency_block[num][2]; 
+	d->array[count++] = dependency_block[num][0];
+	d->array[count++] = dependency_block[num][1];
+	d->array[count++] = dependency_block[num][2];
 	d->array[count++] = dependency_block[num][3];
+
 	tmp = ((int)(num/9))*9;
 	for(i = tmp; i < (tmp+9); i++)
 	{
@@ -158,7 +159,7 @@ int validate_sudoko(SudokoBoard *sudo)
 		}
 		else
 		{
-			ret = 1; 
+			ret = 1;
 		}
 	}
 	return ret;
@@ -178,7 +179,7 @@ void print_sudoko(SudokoBoard *su)
 			}
 			if(i % 9 == 0)
 			{
-				printf("|\n");				
+				printf("|\n");
 			}
 			printf("|");
 		}
@@ -188,7 +189,7 @@ void print_sudoko(SudokoBoard *su)
 			printf(" * ");
 
 	}
-	LOG_INFO("|\n|-----------------------------|\n\n");
+	printf("|\n|-----------------------------|\n\n");
 }
 
 int update_hints(SudokoBoard *sudo, int num)
@@ -213,9 +214,10 @@ int update_hints(SudokoBoard *sudo, int num)
 				}
 			}
 		}
-
+		/*If only one hint is left then thats the number for the this block*/
 		if(sudo->node[num].num_hints == 1)
 		{
+			/*Find which number is that*/
 			for(i = 1; i <= 9; i++)
 			{
 				if(sudo->node[num].hints[i])
@@ -236,6 +238,7 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 	int i, flag, ret;
 	do
 	{
+		/*Fill the values by looking @ the dependency*/
 		flag = 0;
 		for(i = 0; i < 81; i++)
 		{
@@ -245,17 +248,23 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 	}
 	while(0 != flag);
 
+	/*Check if the sudoko is solved after filling some values
+	 * by looking @ their dependency*/
 	ret = validate_sudoko(&sudo);
 	if(ret < 0)
 	{
+		/* This sudoku is unsolvable*/
 		sudo.unsolved = 1;
 		return sudo;
 	}
 	else if(ret > 0)
-	{		
-		/* uncomment the below line to see the intermediate steps 
+	{
+		/* uncomment the below line to see the intermediate steps
 		 * in the solving the game*/
 /*		print_sudoko(&sudo);*/
+
+		/* If we have reached here then we should make guesses
+		 * and try to find a solution */
 		for(i = 0; i < 81; i++)
 		{
 			if(sudo.node[i].value == 0)
@@ -274,16 +283,18 @@ SudokoBoard solve_sudoko(SudokoBoard sudo)
 						tmp_board.node[i].value = sudo.node[i].hints[j];
 						tmp_board.node[i].hints[j] = 0;
 						tmp_board.node[i].num_hints = 0;
-
-						tmp_board = solve_sudoko(tmp_board);						
+						tmp_board.num_solved++;
+						tmp_board = solve_sudoko(tmp_board);
 						if(tmp_board.unsolved == 0)
 						{
+							/* The Sudoku is solved*/
 							num_guess++;
 							return tmp_board;
 						}
 						else
 						{
-							sudo.node[i].value = 0; 
+							sudo.node[i].value = 0;
+							sudo.node[i].hints[j] = 0;
 							sudo.node[i].num_hints--;
 						}
 					}
@@ -317,10 +328,12 @@ int main(int argc, char *argv[])
 		LOG_ERROR("fopen('%s') failed", argv[1]);
 		return 1;
 	}
+
+	/*read the sudoko from the file.*/
 	memset(&sudo, 0, sizeof(SudokoBoard));
 	for(i = 0; i < 81; i++)
 	{
-		int ch = fgetc(fp);	
+		int ch = fgetc(fp);
 
 		if(ch == EOF)
 		{
@@ -340,14 +353,17 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
+			/* if the value dont exist then update the hints.
+			 * The hints can take any value between 1 and 9*/
 			int k;
 			for(k = 0; k <= 9; k++)
 				sudo.node[i].hints[k] = k;
 			sudo.node[i].num_hints = 9;
 		}
-	}	
+	}
 	fclose(fp);
 	print_sudoko(&sudo);
+	/*check if the sudoko is solvable*/
 	if(validate_sudoko(&sudo) < 0)
 	{
 		LOG_ERROR("\n invalid game\n");
@@ -359,7 +375,8 @@ int main(int argc, char *argv[])
 		{
 			LOG_ERROR("this sudoko is unsolvable");
 		}
-
+		/* check the solution if it is correct. This step is not
+		 * necessary but added for the sake of sanity check*/
 		if(validate_sudoko(&sudo) < 0)
 		{
 			LOG_ERROR("\n invalid game\n");
