@@ -1,4 +1,8 @@
-to compile type
+This program solves a sudoku and is implemented in C. If the particular 
+sudoko game needs to guess a value then this algoritm guesses it by 
+trying out all combination using recursive solution. 
+
+To compile type
 make
 
 to use the program run
